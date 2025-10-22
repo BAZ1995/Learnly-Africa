@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# ==========================================================
+# Part 4: User Management - Script to Automate Setup
+#
+# This script performs the following tasks:
+# 1. Creates a new user named 'learnly'.
+# 2. Sets a password for the 'learnly' user.
+# 3. Grants the user full permissions (rwx) in their home directory.
+#
+# NOTE: The final step "Switch to the new user" must be done
+#       manually and is printed at the end of the script.
+# ==========================================================
+
+# 1. Create a new user named learnly.
+echo "1. Creating new user 'learnly'..."
+# 'useradd' creates the user. '-m' ensures a home directory is created if it doesn't exist.
+sudo useradd -m learnly
+
+# Check if user creation was successful
+if [ $? -eq 0 ]; then
+    echo "   [SUCCESS] User 'learnly' created."
+else
+    echo "   [ERROR] User 'learnly' creation failed. Exiting."
+    exit 1
+fi
+echo ""
+sleep 1 # Pause for 1 second to make output clearer
+
+# 2. Set a default password for the user (Recommended for lab environment)
+# In a real-world environment, you would use SSH keys, not a simple password.
+# 'echo -e "password\npassword"' sends the password twice to 'passwd' for confirmation.
+# Replace 'YourSecurePasswordHere' with a temporary password for the lab.
+# WARNING: Storing passwords in a script is a security risk. Use this ONLY for a temporary lab.
+TEMP_PASS="learnlypass"
+echo "2. Setting password for 'learnly' (Temporary: ${TEMP_PASS})"
+echo -e "${TEMP_PASS}\n${TEMP_PASS}" | sudo passwd learnly
+
+if [ $? -eq 0 ]; then
+    echo "   [SUCCESS] Password set for 'learnly'."
+else
+    echo "   [ERROR] Password setting failed. Exiting."
+    exit 1
+fi
+echo ""
+sleep 1
+
+# 3. Grant the user full permissions to read, write, and execute files in their home directory.
+# The useradd command already creates the home directory with default permissions (usually 700 or 755).
+# To explicitly ensure full permissions (rwx) for the owner only, we use chmod 700.
+# The question may be asking to ensure the *owner* has rwx, which is standard, or to ensure *everyone* does (777), which is a security risk.
+# Assuming the intention is to ensure the OWNER has full access (rwx) in the home directory.
+LEARNLY_HOME="/home/learnly"
+
+echo "3. Granting 'learnly' full permissions (rwx) in their home directory (${LEARNLY_HOME})..."
+# This sets the permissions to 700 (rwx for owner, no permissions for group/others)
+sudo chmod 700 ${LEARNLY_HOME}
+
+# For the purpose of *showing the step*, we will also run a check:
+echo "   [CHECK] Current permissions on home directory:"
+sudo ls -ld ${LEARNLY_HOME}
+echo "   [SUCCESS] Permissions set (expected to see 'drwx------' or similar in the output)."
+echo ""
+sleep 1
+
+# 4. Final step instruction (must be done manually for the screenshot)
+echo "=========================================================="
+echo "ACTION REQUIRED: Perform the final step manually."
+echo "4. Switch to the new user:"
+echo "   Run the following command in your terminal:"
+echo "   su - learnly"
+echo ""
+echo "   Use the password: ${TEMP_PASS}"
+echo ""
+echo "   TAKE A SCREENSHOT OF THE PROMPT CHANGE (from '$' to '$learnly') FOR SUBMISSION."
+echo "   Type 'exit' to return to your ec2-user session."
+echo "=========================================================="
