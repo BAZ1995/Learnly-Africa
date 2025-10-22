@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# ==========================================================
+# Script: install_docker.sh
+# Purpose: Updates system, installs Docker, and starts the service.
+# ==========================================================
+
+echo "Starting system update and Docker installation..."
+
+# 1. Update system packages
+echo "1. Updating system packages (dnf update -y)..."
+# Using 'sudo' to ensure we have necessary permissions
+sudo dnf update -y
+if [ $? -ne 0 ]; then
+    echo "ERROR: System update failed. Exiting."
+    exit 1
+fi
+echo "System update complete."
+echo ""
+
+# 2. Install Docker
+echo "2. Installing Docker using dnf install -y docker..."
+sudo dnf install -y docker
+if [ $? -ne 0 ]; then
+    echo "ERROR: Docker installation failed. Exiting."
+    exit 1
+fi
+echo "Docker installed successfully."
+echo ""
+
+# 3. Enable and start Docker service
+echo "3. Enabling and starting the Docker service..."
+sudo systemctl enable docker  # Ensures Docker starts on reboot
+sudo systemctl start docker    # Starts the Docker service now
+
+# Check the status to ensure it is running
+DOCKER_STATUS=$(sudo systemctl is-active docker)
+if [ "$DOCKER_STATUS" = "active" ]; then
+    echo "SUCCESS: Docker service is active and running."
+else
+    echo "WARNING: Docker service may not be running. Current status: ${DOCKER_STATUS}"
+fi
+echo ""
+
+# Add the current user (ec2-user) to the 'docker' group to run commands without sudo
+# This is a best practice for ease of use in lab environments
+CURRENT_USER=$(whoami)
+echo "Adding user '${CURRENT_USER}' to the 'docker' group. You must LOG OUT and log back in for this change to take effect."
+sudo usermod -aG docker ${CURRENT_USER}
+
+echo "Docker installation script complete."
